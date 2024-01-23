@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OpenAI Chatbot</title>
+</head>
+<body>
+    <h1>Chat with the OpenAI Chatbot</h1>
+    <div>
+        <label for="userInput">Enter your message:</label>
+        <input type="text" id="userInput" placeholder="Type your message">
+        <button id="sendMessage">Send</button>
+    </div>
+    <div id="chatHistory">
+        <p>Welcome to the chat. Start by typing a message.</p>
+    </div>
+
+    <script>
+        const apiKey = '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';
+        const apiEndpoint = 'https://chat.openai.com/g/g-rffsDzXdP-teaching-credentials-at-sac-state';
+
+        const userInput = document.getElementById('userInput');
+        const sendMessageBtn = document.getElementById('sendMessage');
+        const chatHistory = document.getElementById('chatHistory');
+
+        sendMessageBtn.addEventListener('click', async () => {
+            const userMessage = userInput.value;
+            if (!userMessage) return;
+
+            // Clear user input field
+            userInput.value = '';
+
+            // Display user message in the chat history
+            displayMessage('User', userMessage);
+
+            // Send the user's message to the OpenAI chat endpoint
+            const chatbotResponse = await sendAPIRequest(userMessage);
+
+            // Display chatbot response in the chat history
+            displayMessage('Chatbot', chatbotResponse);
+        });
+
+        async function sendAPIRequest(userMessage) {
+            try {
+                const response = await fetch(apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`,
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            {
+                                role: 'system',
+                                content: 'You are a helpful assistant.',
+                            },
+                            {
+                                role: 'user',
+                                content: userMessage,
+                            },
+                        ],
+                    }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.choices[0].message.content;
+                } else {
+                    console.error('API request failed:', response.statusText);
+                    return 'Error: Unable to generate response';
+                }
+            } catch (error) {
+                console.error('An error occurred:', error);
+                return 'Error: An unexpected error occurred';
+            }
+        }
+
+        function displayMessage(role, message) {
+            const messageElement = document.createElement('p');
+            messageElement.textContent = `${role}: ${message}`;
+            chatHistory.appendChild(messageElement);
+        }
+    </script>
+</body>
+</html>
+
